@@ -41,14 +41,12 @@
   <div id="startOverlay">Click to activate the assemblage</div>
   <div id="quote">Initializing...</div>
 
-  <!-- Audio Element -->
   <audio id="background-audio" preload="auto" loop>
     <source src="emergenttrack2.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
 
   <script>
-    // Fragments
     const fragments = [
       "How does a gathering become a happening?",
       "Greater than the sum of its parts?",
@@ -83,22 +81,7 @@
     setInterval(updateQuote, 10000);
     updateQuote();
 
-    // Optional: Add OpenWeatherMap API key here
-    // const apiKey = "YOUR_KEY";
-    // navigator.geolocation.getCurrentPosition(pos => {
-    //   fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${apiKey}&units=metric`)
-    //     .then(res => res.json())
-    //     .then(data => {
-    //       const temp = data.main.temp;
-    //       const desc = data.weather[0].description;
-    //       weatherData = `🌦️ ${temp}°C, ${desc}`;
-    //       updateQuote();
-    //     });
-    // });
-
-    // Particle visuals
     let particles = [];
-
     function setup() {
       createCanvas(windowWidth, windowHeight);
       for (let i = 0; i < 150; i++) {
@@ -136,7 +119,7 @@
       audio.play().then(() => {
         document.getElementById('startOverlay').style.display = 'none';
       }).catch(err => {
-        alert(\"Autoplay blocked: click again or use the audio controls.\");
+        alert(\"Autoplay blocked or file missing. Check MP3 upload.\");
         console.error(err);
       });
     });
