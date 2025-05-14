@@ -75,7 +75,7 @@
     let currentTemp = 20;
     let currentCondition = "clear";
 
-    const apiKey = "78fc8980f87888c003d809ef3035c84c";
+    const apiKey = "78fc8980f87888c003d809ef3035c84c"; // ✅ working key
 
     function fetchWeather(lat, lon) {
       fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
@@ -137,7 +137,7 @@
       });
     });
 
-    // p5.js engine
+    // p5.js visual engine
     let images = [], entities = [];
 
     function preload() {
@@ -156,54 +156,50 @@
           y: random(height),
           baseX: random(width),
           baseY: random(height),
-          opacity: 255,
-          driftX: random(-0.5, 0.5),
-          driftY: random(-0.5, 0.5),
-          angle: random(TWO_PI)
+          driftX: random(-0.3, 0.3),
+          driftY: random(-0.3, 0.3),
+          opacity: 255
         });
       }
     }
 
     function draw() {
       background(0, 15);
+      let speed = map(currentTemp, -10, 40, 0.1, 2);
 
       for (let e of entities) {
         push();
         translate(e.x, e.y);
 
-        // Weather-driven movement
-        let speedMod = map(currentTemp, -10, 40, 0.2, 2);
-
         if (currentCondition.includes("clear")) {
-          e.x += e.driftX * speedMod;
-          e.y += e.driftY * speedMod;
-          tint(255, 220);
+          e.x += e.driftX * speed;
+          e.y += e.driftY * speed;
+          tint(255, 240);
         }
-
-        if (currentCondition.includes("rain")) {
-          e.y += 1.5 * speedMod;
-          tint(180, 180, 255, 180); // bluish tone
+        else if (currentCondition.includes("rain")) {
+          e.y += 1.5 * speed;
+          tint(180, 200, 255, 200);
         }
-
-        if (currentCondition.includes("cloud")) {
+        else if (currentCondition.includes("cloud")) {
           e.x += sin(frameCount * 0.01 + e.baseY * 0.01) * 0.5;
           tint(200, 200, 200, 200);
         }
-
-        if (currentCondition.includes("snow")) {
+        else if (currentCondition.includes("snow")) {
           e.y += sin(frameCount * 0.02 + e.baseX * 0.01) * 0.5;
           e.opacity = 180 + sin(frameCount * 0.01) * 50;
           tint(255, e.opacity);
+        } else {
+          tint(255, 255);
         }
 
-        image(e.img, 0, 0, 300, 300);
+        image(e.img, 0, 0, 320, 320);
         pop();
 
-        // Wrap around edges
-        if (e.x > width + 150) e.x = -150;
-        if (e.x < -150) e.x = width + 150;
-        if (e.y > height + 150) e.y = -150;
-        if (e.y < -150) e.y = height + 150;
+        // Wrap around
+        if (e.x > width + 200) e.x = -200;
+        if (e.x < -200) e.x = width + 200;
+        if (e.y > height + 200) e.y = -200;
+        if (e.y < -200) e.y = height + 200;
       }
     }
 
