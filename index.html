@@ -11,12 +11,8 @@
       padding: 0;
       overflow: hidden;
       background: black;
-      color: #00ffcc;
       font-family: monospace;
-      height: 100%;
-      width: 100%;
     }
-
     #quote {
       position: absolute;
       top: 50%;
@@ -24,11 +20,11 @@
       transform: translate(-50%, -50%);
       width: 80%;
       font-size: 1.6em;
+      color: #00ffcc;
       text-align: center;
       white-space: pre-line;
       z-index: 10;
     }
-
     #startOverlay {
       position: fixed;
       top: 0; left: 0;
@@ -43,7 +39,6 @@
       cursor: pointer;
       z-index: 1000;
     }
-
     audio {
       display: none;
     }
@@ -54,36 +49,33 @@
   <div id="quote">Initializing...</div>
 
   <audio id="background-audio" preload="auto" loop>
-    <source src="emergenttrack2.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
+    <source src="emergenttrack2.mp3" type="audio/mpeg" />
   </audio>
 
   <script>
     const fragments = [
       "How does a gathering become a happening?",
       "Greater than the sum of its parts?",
-      "One answer is contamination.",
-      "Polyphony is music in which autonomous melodies intertwine.",
-      "Poetics suggests life without what we think we need.",
+      "Contamination.",
+      "Polyphony intertwines.",
+      "Poetics without need.",
       "Transformation through encounter.",
       "Letting go of control.",
-      "Shifting hope toward action not born of desperation.",
-      "Desire becomes design.",
-      "You are always being made gently.",
+      "Hope born of desire.",
       "You are always being unmade slowly.",
       "Technology is a traitorous saviour.",
       "The machine is dreaming.",
       "Tangled in signal.",
       "Data is growing teeth.",
       "Signal lost in velvet static.",
-      "Uncertainty works in multiple ways."
+      "Uncertainty flows across contexts."
     ];
 
     let weatherData = "🌍 Weather unknown";
     let currentTemp = 20;
     let currentCondition = "clear";
 
-    const apiKey = "78fc8980f87888c003d809ef3035c84c"; // OpenWeatherMap key
+    const apiKey = "78fc8980f87888c003d809ef3035c84c";
 
     function fetchWeather(lat, lon) {
       fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
@@ -103,127 +95,115 @@
 
     navigator.geolocation.getCurrentPosition(
       pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-      err => fetchWeather(50.8278, -0.1527) // Brighton fallback
+      err => fetchWeather(50.8278, -0.1527)
     );
 
     function getEntangledQuote() {
       const shuffled = [...fragments].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, 3 + Math.floor(Math.random() * 3)).join(" ");
+      return shuffled.slice(0, 3).join(" ");
     }
 
     function speakQuote(text) {
-      if ('speechSynthesis' in window) {
-        const synth = window.speechSynthesis;
+      const synth = window.speechSynthesis;
+      function tryVoice() {
+        const voices = synth.getVoices();
+        if (!voices.length) return setTimeout(tryVoice, 100);
 
-        function selectVoiceAndSpeak() {
-          const voices = synth.getVoices();
-          if (!voices.length) {
-            setTimeout(selectVoiceAndSpeak, 100);
-            return;
-          }
-
-          const preferred = voices.find(v =>
-            v.name.includes("Google UK English Female") ||
-            v.name.includes("Microsoft Hazel") ||
-            (v.lang === 'en-GB')
-          );
-
-          const utter = new SpeechSynthesisUtterance(text);
-          utter.voice = preferred || voices.find(v => v.lang.startsWith("en"));
-          utter.lang = 'en-GB';
-          utter.pitch = 1;
-          utter.rate = 0.9;
-          utter.volume = 0.6;
-          synth.cancel();
-          synth.speak(utter);
-        }
-
-        selectVoiceAndSpeak();
+        const voice = voices.find(v => v.name.includes("Google UK English Female") || v.lang === "en-GB") || voices[0];
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.voice = voice;
+        utter.lang = 'en-GB';
+        utter.pitch = 1;
+        utter.rate = 0.9;
+        utter.volume = 0.6;
+        synth.cancel();
+        synth.speak(utter);
       }
+      tryVoice();
     }
 
     function updateQuote() {
       const quote = `${getEntangledQuote()}\n\n${weatherData}`;
       document.getElementById("quote").innerText = quote;
-      speakQuote(quote.replace(/\n\n.*$/, ''));
+      speakQuote(quote.replace(/\n\n.*$/, ""));
     }
 
     setInterval(updateQuote, 10000);
     updateQuote();
 
-    const audio = document.getElementById('background-audio');
     document.getElementById('startOverlay').addEventListener('click', () => {
-      audio.play().then(() => {
+      document.getElementById('background-audio').play().then(() => {
         document.getElementById('startOverlay').style.display = 'none';
-      }).catch(err => {
-        alert("⚠️ Could not play audio. Check file.");
-        console.error("Audio error:", err);
       });
     });
 
-    // p5.js visuals
-    let particles = [];
+    // p5.js engine
+    let images = [], entities = [];
+
+    function preload() {
+      for (let i = 1; i <= 5; i++) {
+        images.push(loadImage(`assets/visual${i}.png`));
+      }
+    }
+
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      for (let i = 0; i < 150; i++) {
-        particles.push({
+      imageMode(CENTER);
+      for (let i = 0; i < images.length; i++) {
+        entities.push({
+          img: images[i],
           x: random(width),
           y: random(height),
-          vx: random(-0.5, 0.5),
-          vy: random(-0.5, 0.5),
-          size: random(1, 4)
+          baseX: random(width),
+          baseY: random(height),
+          opacity: 255,
+          driftX: random(-0.5, 0.5),
+          driftY: random(-0.5, 0.5),
+          angle: random(TWO_PI)
         });
       }
     }
 
     function draw() {
-      background(0, 10);
-      noStroke();
-      fill(0, 255, 204, 100);
-      for (let p of particles) {
-        ellipse(p.x, p.y, p.size);
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0 || p.x > width) p.vx *= -1;
-        if (p.y < 0 || p.y > height) p.vy *= -1;
-      }
+      background(0, 15);
 
-      if (audio && !audio.paused) {
-        let speed = map(mouseX, 0, width, 0.5, 2.0);
-        audio.playbackRate = constrain(speed, 0.5, 2.0);
-      }
+      for (let e of entities) {
+        push();
+        translate(e.x, e.y);
 
-      renderWeatherVisuals();
-    }
+        // Weather-driven movement
+        let speedMod = map(currentTemp, -10, 40, 0.2, 2);
 
-    function renderWeatherVisuals() {
-      let tHue = map(currentTemp, -10, 40, 200, 0);
-      noStroke();
-      fill(tHue, 255, 150, 20);
-      ellipse(width / 2, height / 2, map(currentTemp, -10, 40, 100, 400));
-
-      if (currentCondition.includes("rain")) {
-        for (let i = 0; i < 50; i++) {
-          stroke(0, 150, 255, 100);
-          line(random(width), random(height), random(width), random(height + 10));
+        if (currentCondition.includes("clear")) {
+          e.x += e.driftX * speedMod;
+          e.y += e.driftY * speedMod;
+          tint(255, 220);
         }
-      }
 
-      if (currentCondition.includes("clear")) {
-        fill(255, 255, 0, 10);
-        ellipse(width / 2, height / 2, 50);
-      }
-
-      if (currentCondition.includes("snow")) {
-        fill(255, 255, 255, 80);
-        for (let i = 0; i < 30; i++) {
-          ellipse(random(width), random(height), 2);
+        if (currentCondition.includes("rain")) {
+          e.y += 1.5 * speedMod;
+          tint(180, 180, 255, 180); // bluish tone
         }
-      }
 
-      if (currentCondition.includes("cloud")) {
-        fill(200, 200, 200, 20);
-        ellipse(width / 2 + random(-100, 100), height / 2 + random(-100, 100), 100);
+        if (currentCondition.includes("cloud")) {
+          e.x += sin(frameCount * 0.01 + e.baseY * 0.01) * 0.5;
+          tint(200, 200, 200, 200);
+        }
+
+        if (currentCondition.includes("snow")) {
+          e.y += sin(frameCount * 0.02 + e.baseX * 0.01) * 0.5;
+          e.opacity = 180 + sin(frameCount * 0.01) * 50;
+          tint(255, e.opacity);
+        }
+
+        image(e.img, 0, 0, 300, 300);
+        pop();
+
+        // Wrap around edges
+        if (e.x > width + 150) e.x = -150;
+        if (e.x < -150) e.x = width + 150;
+        if (e.y > height + 150) e.y = -150;
+        if (e.y < -150) e.y = height + 150;
       }
     }
 
