@@ -95,7 +95,7 @@
     const apiKey = "78fc8980f87888c003d809ef3035c84c";
 
     function fetchWeather(lat, lon) {
-      fetch(https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric)
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
         .then(res => res.json())
         .then(data => {
           currentTemp = data.main.temp;
