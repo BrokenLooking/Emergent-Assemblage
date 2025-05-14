@@ -7,20 +7,28 @@
   <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
   <style>
     html, body {
-      margin: 0; padding: 0; overflow: hidden;
-      background: black; color: #00ffcc;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+      color: #00ffcc;
       font-family: monospace;
+      height: 100%;
+      width: 100%;
     }
+
     #quote {
       position: absolute;
-      top: 10%;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       width: 80%;
-      font-size: 1.4em;
+      font-size: 1.6em;
       text-align: center;
+      white-space: pre-line;
       z-index: 10;
     }
+
     #startOverlay {
       position: fixed;
       top: 0; left: 0;
@@ -34,6 +42,10 @@
       font-size: 2em;
       cursor: pointer;
       z-index: 1000;
+    }
+
+    audio {
+      display: none;
     }
   </style>
 </head>
@@ -68,36 +80,78 @@
     ];
 
     let weatherData = "🌍 Weather unknown";
+    let currentTemp = 20;
+    let currentCondition = "clear";
 
-    const apiKey = "78fc8980f87888c003d809ef3035c84c";
-    navigator.geolocation.getCurrentPosition(pos => {
-      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=${apiKey}&units=metric`)
+    const apiKey = "78fc8980f87888c003d809ef3035c84c"; // Replace if needed
+
+    function fetchWeather(lat, lon) {
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
         .then(res => res.json())
         .then(data => {
-          const temp = data.main.temp;
+          currentTemp = data.main.temp;
+          currentCondition = data.weather[0].main.toLowerCase();
           const desc = data.weather[0].description;
-          weatherData = `🌦️ ${temp}°C, ${desc}`;
+          weatherData = `🌦️ ${currentTemp}°C, ${desc}`;
+          updateQuote();
+        })
+        .catch(err => {
+          weatherData = "⚠️ Weather fetch error.";
+          console.error("Weather error:", err);
           updateQuote();
         });
-    }, err => {
-      weatherData = "⚠️ Location permission denied.";
-      updateQuote();
-    });
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        fetchWeather(pos.coords.latitude, pos.coords.longitude);
+      },
+      err => {
+        fetchWeather(50.8278, -0.1527); // Brighton fallback
+      }
+    );
 
     function getEntangledQuote() {
       const shuffled = [...fragments].sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, Math.floor(3 + Math.random() * 3)).join(" ");
+      return shuffled.slice(0, 3 + Math.floor(Math.random() * 3)).join(" ");
+    }
+
+    function speakQuote(text) {
+      if ('speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US';
+        utter.pitch = 0.9;
+        utter.rate = 0.85;
+        utter.volume = 0.6;
+        const voices = speechSynthesis.getVoices();
+        utter.voice = voices.find(v => v.name.includes("Google") || v.name.includes("Microsoft")) || voices[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utter);
+      }
     }
 
     function updateQuote() {
-      document.getElementById("quote").innerText = `${getEntangledQuote()}
-
-${weatherData}`;
+      const quote = `${getEntangledQuote()}\n\n${weatherData}`;
+      document.getElementById("quote").innerText = quote;
+      speakQuote(quote.replace(/\n\n.*$/, ''));
     }
 
     setInterval(updateQuote, 10000);
     updateQuote();
 
+    // Audio interaction
+    const audio = document.getElementById('background-audio');
+
+    document.getElementById('startOverlay').addEventListener('click', () => {
+      audio.play().then(() => {
+        document.getElementById('startOverlay').style.display = 'none';
+      }).catch(err => {
+        alert("⚠️ Could not play audio. Check file.");
+        console.error("Audio error:", err);
+      });
+    });
+
+    // p5 visuals
     let particles = [];
     function setup() {
       createCanvas(windowWidth, windowHeight);
@@ -124,24 +178,49 @@ ${weatherData}`;
         if (p.y < 0 || p.y > height) p.vy *= -1;
       }
 
-      const audio = document.getElementById('background-audio');
+      // Cursor ↔️ audio speed
       if (audio && !audio.paused) {
         let speed = map(mouseX, 0, width, 0.5, 2.0);
         audio.playbackRate = constrain(speed, 0.5, 2.0);
       }
+
+      renderWeatherVisuals();
     }
 
-    document.getElementById('startOverlay').addEventListener('click', () => {
-      const audio = document.getElementById('background-audio');
-      console.log("User clicked to start audio");
-      audio.play().then(() => {
-        document.getElementById('startOverlay').style.display = 'none';
-        console.log("Audio started");
-      }).catch(err => {
-        alert("⚠️ Could not play audio. Check if the MP3 file is uploaded correctly.");
-        console.error("Audio play error:", err);
-      });
-    });
+    function renderWeatherVisuals() {
+      let tHue = map(currentTemp, -10, 40, 200, 0);
+      noStroke();
+      fill(tHue, 255, 150, 20);
+      ellipse(width / 2, height / 2, map(currentTemp, -10, 40, 100, 400));
+
+      if (currentCondition.includes("rain")) {
+        for (let i = 0; i < 50; i++) {
+          stroke(0, 150, 255, 100);
+          line(random(width), random(height), random(width), random(height + 10));
+        }
+      }
+
+      if (currentCondition.includes("clear")) {
+        fill(255, 255, 0, 10);
+        ellipse(width / 2, height / 2, 50);
+      }
+
+      if (currentCondition.includes("snow")) {
+        fill(255, 255, 255, 80);
+        for (let i = 0; i < 30; i++) {
+          ellipse(random(width), random(height), 2);
+        }
+      }
+
+      if (currentCondition.includes("cloud")) {
+        fill(200, 200, 200, 20);
+        ellipse(width / 2 + random(-100, 100), height / 2 + random(-100, 100), 100);
+      }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
   </script>
 </body>
 </html>
