@@ -75,7 +75,7 @@
     let currentTemp = 20;
     let currentCondition = "clear";
 
-    const apiKey = "78fc8980f87888c003d809ef3035c84c"; // Working key
+    const apiKey = "78fc8980f87888c003d809ef3035c84c";
 
     function fetchWeather(lat, lon) {
       fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
@@ -93,7 +93,7 @@
 
     navigator.geolocation.getCurrentPosition(
       pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-      err => fetchWeather(50.8278, -0.1527) // fallback
+      err => fetchWeather(50.8278, -0.1527)
     );
 
     function getEntangledQuote() {
@@ -106,7 +106,6 @@
       function tryVoice() {
         const voices = synth.getVoices();
         if (!voices.length) return setTimeout(tryVoice, 100);
-
         const voice = voices.find(v => v.name.includes("Google UK English Female") || v.lang === "en-GB") || voices[0];
         const utter = new SpeechSynthesisUtterance(text);
         utter.voice = voice;
@@ -135,7 +134,7 @@
       });
     });
 
-    // p5.js visual engine
+    // p5 visuals
     let images = [], entities = [];
 
     function preload() {
@@ -162,7 +161,8 @@
     }
 
     function draw() {
-      background(255, 15);
+      background(255); // ✅ Solid white
+
       let speed = map(currentTemp, -10, 40, 0.1, 2);
 
       for (let e of entities) {
@@ -172,17 +172,14 @@
         if (currentCondition.includes("clear")) {
           e.x += e.driftX * speed;
           e.y += e.driftY * speed;
-          tint(0, 0, 0, 240); // black tint
-        }
-        else if (currentCondition.includes("rain")) {
+          tint(0, 0, 0, 240);
+        } else if (currentCondition.includes("rain")) {
           e.y += 1.5 * speed;
           tint(100, 100, 100, 180);
-        }
-        else if (currentCondition.includes("cloud")) {
+        } else if (currentCondition.includes("cloud")) {
           e.x += sin(frameCount * 0.01 + e.baseY * 0.01) * 0.5;
           tint(120, 120, 120, 200);
-        }
-        else if (currentCondition.includes("snow")) {
+        } else if (currentCondition.includes("snow")) {
           e.y += sin(frameCount * 0.02 + e.baseX * 0.01) * 0.5;
           e.opacity = 180 + sin(frameCount * 0.01) * 50;
           tint(0, 0, 0, e.opacity);
@@ -190,7 +187,7 @@
           tint(0, 0, 0, 255);
         }
 
-        image(e.img, 0, 0, 520, 520);
+        image(e.img, 0, 0, 520, 520); // large size
         pop();
 
         if (e.x > width + 300) e.x = -300;
