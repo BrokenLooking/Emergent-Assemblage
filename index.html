@@ -117,16 +117,15 @@
 
     document.getElementById('startOverlay').addEventListener('click', () => {
       const audio = document.getElementById('background-audio');
-      console.log(\"User clicked to start audio\");
+      console.log("User clicked to start audio");
       audio.play().then(() => {
         document.getElementById('startOverlay').style.display = 'none';
-        console.log(\"Audio started\");
+        console.log("Audio started");
       }).catch(err => {
-        alert(\"⚠️ Could not play audio. Check if the MP3 file is uploaded correctly.\");
-        console.error(\"Audio play error:\", err);
+        alert("⚠️ Could not play audio. Check if the MP3 file is uploaded correctly.");
+        console.error("Audio play error:", err);
       });
     });
   </script>
 </body>
 </html>
-
