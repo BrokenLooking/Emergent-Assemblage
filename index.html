@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Emergent Assemblage</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poetsen+One&display=swap" rel="stylesheet">
+ <link href="https://fonts.googleapis.com/css2?family=Poetsen+One&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
   <style>
     html, body {
@@ -19,18 +19,18 @@
       display: block;
     }
     #quote {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      font-size: 2.4em;
-      font-weight: 800;
-      color: black;
-      text-align: center;
-      white-space: pre-line;
-      z-index: 10;
-    }
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  font-size: 2.4em;     /* Larger text */
+  font-weight: 800;     /* Bold */
+  color: black;
+  text-align: center;
+  white-space: pre-line;
+  z-index: 10;
+}
     #startOverlay {
       position: fixed;
       top: 0; left: 0;
@@ -54,13 +54,13 @@
   <div id="startOverlay">Click to activate the assemblage</div>
   <div id="quote">Initializing...</div>
 
-  <audio id="background-audio" preload="auto" loop muted>
+  <audio id="background-audio" preload="auto" loop>
     <source src="emergenttrack2.mp3" type="audio/mpeg" />
   </audio>
 
   <script>
     const fragments = [
-      "How does a gathering become a happening?",
+     "How does a gathering become a happening?",
       "Greater than the sum of its parts?",
       "One answer is contamination.",
       "Polyphony is music",
@@ -87,13 +87,11 @@
 
     let currentTemp = 20;
     let currentCondition = "clear";
+
     const apiKey = "78fc8980f87888c003d809ef3035c84c";
 
-    let images = [], entities = [];
-    let audioEl, audioCtx, gainNode;
-
     function fetchWeather(lat, lon) {
-      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
+      fetch(https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric)
         .then(res => res.json())
         .then(data => {
           currentTemp = data.main.temp;
@@ -144,33 +142,22 @@
     updateQuote();
 
     document.getElementById('startOverlay').addEventListener('click', () => {
-      audioEl = document.getElementById('background-audio');
-      audioEl.muted = false;
-      audioCtx.resume().then(() => {
-        audioEl.play().then(() => {
-          document.getElementById('startOverlay').style.display = 'none';
-        });
+      document.getElementById('background-audio').play().then(() => {
+        document.getElementById('startOverlay').style.display = 'none';
       });
     });
 
+    let images = [], entities = [];
+
     function preload() {
-      // Temporary fallback image to ensure visuals load
-      let testImg = loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/640px-PNG_transparency_demonstration_1.png');
-      for (let i = 0; i < 8; i++) {
-        images.push(testImg);
+      for (let i = 1; i <= 8; i++) {
+        images.push(loadImage(assets/visual${i}.png));
       }
     }
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
       imageMode(CENTER);
-
-      audioEl = document.getElementById('background-audio');
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const track = audioCtx.createMediaElementSource(audioEl);
-      gainNode = audioCtx.createGain();
-      track.connect(gainNode).connect(audioCtx.destination);
-
       for (let i = 0; i < images.length; i++) {
         entities.push({
           img: images[i],
@@ -185,48 +172,42 @@
       }
     }
 
-    function draw() {
-      background(255);
+  function draw() {
+  background(255); // ✅ solid white
 
-      let speed = map(currentTemp, -10, 40, 0.1, 2);
-      let rate = map(mouseX, 0, width, 0.5, 2);
-      let volume = map(mouseY, height, 0, 0, 1);
+  let speed = map(currentTemp, -10, 40, 0.1, 2);
 
-      if (audioEl && gainNode) {
-        audioEl.playbackRate = constrain(rate, 0.5, 2);
-        gainNode.gain.value = constrain(volume, 0, 1);
-      }
+  for (let e of entities) {
+    push();
+    translate(e.x, e.y);
 
-      for (let e of entities) {
-        push();
-        translate(e.x, e.y);
-
-        if (currentCondition.includes("clear")) {
-          e.x += e.driftX * speed;
-          e.y += e.driftY * speed;
-          noTint();
-        } else if (currentCondition.includes("rain")) {
-          e.y += 1.5 * speed;
-          tint(255, 180);
-        } else if (currentCondition.includes("cloud")) {
-          e.x += sin(frameCount * 0.01 + e.baseY * 0.01) * 0.5;
-          tint(255, 200);
-        } else if (currentCondition.includes("snow")) {
-          e.y += sin(frameCount * 0.02 + e.baseX * 0.01) * 0.5;
-          e.opacity = 180 + sin(frameCount * 0.01) * 50;
-          tint(255, e.opacity);
-        } else {
-          noTint();
-        }
-
-        image(e.img, 0, 0, 800, 800);
-        pop();
-
-        if (e.x <= 0 || e.x >= width) e.driftX *= -1;
-        if (e.y <= 0 || e.y >= height) e.driftY *= -1;
-      }
+    // Weather-controlled movement (color preserved)
+    if (currentCondition.includes("clear")) {
+      e.x += e.driftX * speed;
+      e.y += e.driftY * speed;
+      noTint();
+    } else if (currentCondition.includes("rain")) {
+      e.y += 1.5 * speed;
+      tint(255, 180);
+    } else if (currentCondition.includes("cloud")) {
+      e.x += sin(frameCount * 0.01 + e.baseY * 0.01) * 0.5;
+      tint(255, 200);
+    } else if (currentCondition.includes("snow")) {
+      e.y += sin(frameCount * 0.02 + e.baseX * 0.01) * 0.5;
+      e.opacity = 180 + sin(frameCount * 0.01) * 50;
+      tint(255, e.opacity);
+    } else {
+      noTint();
     }
 
+    image(e.img, 0, 0, 800, 800); // 🆙 bigger visuals
+    pop();
+
+    // ✅ Bounce off edges instead of wrapping offscreen
+    if (e.x <= 0 || e.x >= width) e.driftX *= -1;
+    if (e.y <= 0 || e.y >= height) e.driftY *= -1;
+  }
+}
     function windowResized() {
       resizeCanvas(windowWidth, windowHeight);
     }
