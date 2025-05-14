@@ -4,14 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Emergent Assemblage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: black;
-      font-family: monospace;
+      background: white;
+      font-family: 'Space Grotesk', sans-serif;
     }
     #quote {
       position: absolute;
@@ -20,7 +21,7 @@
       transform: translate(-50%, -50%);
       width: 80%;
       font-size: 1.6em;
-      color: #00ffcc;
+      color: black;
       text-align: center;
       white-space: pre-line;
       z-index: 10;
@@ -30,8 +31,8 @@
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0,0,0,0.95);
-      color: white;
+      background: rgba(255,255,255,0.95);
+      color: black;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -71,11 +72,10 @@
       "Uncertainty flows across contexts."
     ];
 
-    let weatherData = "🌍 Weather unknown";
     let currentTemp = 20;
     let currentCondition = "clear";
 
-    const apiKey = "78fc8980f87888c003d809ef3035c84c"; // ✅ working key
+    const apiKey = "78fc8980f87888c003d809ef3035c84c"; // Working key
 
     function fetchWeather(lat, lon) {
       fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
@@ -83,19 +83,17 @@
         .then(data => {
           currentTemp = data.main.temp;
           currentCondition = data.weather[0].main.toLowerCase();
-          const desc = data.weather[0].description;
-          weatherData = `🌦️ ${currentTemp}°C, ${desc}`;
           updateQuote();
         })
         .catch(err => {
-          weatherData = "⚠️ Weather fetch error.";
+          currentCondition = "unknown";
           updateQuote();
         });
     }
 
     navigator.geolocation.getCurrentPosition(
       pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-      err => fetchWeather(50.8278, -0.1527)
+      err => fetchWeather(50.8278, -0.1527) // fallback
     );
 
     function getEntangledQuote() {
@@ -123,9 +121,9 @@
     }
 
     function updateQuote() {
-      const quote = `${getEntangledQuote()}\n\n${weatherData}`;
+      const quote = getEntangledQuote();
       document.getElementById("quote").innerText = quote;
-      speakQuote(quote.replace(/\n\n.*$/, ""));
+      speakQuote(quote);
     }
 
     setInterval(updateQuote, 10000);
@@ -164,7 +162,7 @@
     }
 
     function draw() {
-      background(0, 15);
+      background(255, 15);
       let speed = map(currentTemp, -10, 40, 0.1, 2);
 
       for (let e of entities) {
@@ -174,32 +172,31 @@
         if (currentCondition.includes("clear")) {
           e.x += e.driftX * speed;
           e.y += e.driftY * speed;
-          tint(255, 240);
+          tint(0, 0, 0, 240); // black tint
         }
         else if (currentCondition.includes("rain")) {
           e.y += 1.5 * speed;
-          tint(180, 200, 255, 200);
+          tint(100, 100, 100, 180);
         }
         else if (currentCondition.includes("cloud")) {
           e.x += sin(frameCount * 0.01 + e.baseY * 0.01) * 0.5;
-          tint(200, 200, 200, 200);
+          tint(120, 120, 120, 200);
         }
         else if (currentCondition.includes("snow")) {
           e.y += sin(frameCount * 0.02 + e.baseX * 0.01) * 0.5;
           e.opacity = 180 + sin(frameCount * 0.01) * 50;
-          tint(255, e.opacity);
+          tint(0, 0, 0, e.opacity);
         } else {
-          tint(255, 255);
+          tint(0, 0, 0, 255);
         }
 
-        image(e.img, 0, 0, 320, 320);
+        image(e.img, 0, 0, 520, 520);
         pop();
 
-        // Wrap around
-        if (e.x > width + 200) e.x = -200;
-        if (e.x < -200) e.x = width + 200;
-        if (e.y > height + 200) e.y = -200;
-        if (e.y < -200) e.y = height + 200;
+        if (e.x > width + 300) e.x = -300;
+        if (e.x < -300) e.x = width + 300;
+        if (e.y > height + 300) e.y = -300;
+        if (e.y < -300) e.y = height + 300;
       }
     }
 
