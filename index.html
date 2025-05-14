@@ -164,7 +164,7 @@
     }
 
     function draw() {
-      background(255); // 💯 white background
+      background(255); // ✅ solid white
 
       let speed = map(currentTemp, -10, 40, 0.1, 2);
 
@@ -172,27 +172,29 @@
         push();
         translate(e.x, e.y);
 
+        // Weather-controlled movement (color preserved)
         if (currentCondition.includes("clear")) {
           e.x += e.driftX * speed;
           e.y += e.driftY * speed;
-          tint(0, 0, 0, 240);
+          noTint();
         } else if (currentCondition.includes("rain")) {
           e.y += 1.5 * speed;
-          tint(100, 100, 100, 180);
+          tint(255, 180); // original color + slight opacity
         } else if (currentCondition.includes("cloud")) {
           e.x += sin(frameCount * 0.01 + e.baseY * 0.01) * 0.5;
-          tint(120, 120, 120, 200);
+          tint(255, 200);
         } else if (currentCondition.includes("snow")) {
           e.y += sin(frameCount * 0.02 + e.baseX * 0.01) * 0.5;
           e.opacity = 180 + sin(frameCount * 0.01) * 50;
-          tint(0, 0, 0, e.opacity);
+          tint(255, e.opacity);
         } else {
-          tint(0, 0, 0, 255);
+          noTint();
         }
 
-        image(e.img, 0, 0, 520, 520);
+        image(e.img, 0, 0, 520, 520); // full-size visuals
         pop();
 
+        // Wrap around
         if (e.x > width + 300) e.x = -300;
         if (e.x < -300) e.x = width + 300;
         if (e.y > height + 300) e.y = -300;
