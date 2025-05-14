@@ -141,13 +141,17 @@
     setInterval(updateQuote, 10000);
     updateQuote();
 
-    document.getElementById('startOverlay').addEventListener('click', () => {
-      document.getElementById('background-audio').play().then(() => {
-        document.getElementById('startOverlay').style.display = 'none';
-      });
+document.getElementById('startOverlay').addEventListener('click', () => {
+  audioCtx.resume().then(() => {
+    audioEl.play().then(() => {
+      document.getElementById('startOverlay').style.display = 'none';
     });
+  });
+});
 
     let images = [], entities = [];
+    let audioEl, audioCtx, gainNode;
+
 
     function preload() {
       for (let i = 1; i <= 8; i++) {
@@ -158,6 +162,12 @@
     function setup() {
       createCanvas(windowWidth, windowHeight);
       imageMode(CENTER);
+      audioEl = document.getElementById('background-audio');
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const track = audioCtx.createMediaElementSource(audioEl);
+gainNode = audioCtx.createGain();
+track.connect(gainNode).connect(audioCtx.destination);
+
       for (let i = 0; i < images.length; i++) {
         entities.push({
           img: images[i],
@@ -176,6 +186,11 @@
   background(255); // ✅ solid white
 
   let speed = map(currentTemp, -10, 40, 0.1, 2);
+    let rate = map(mouseX, 0, width, 0.5, 2);
+let volume = map(mouseY, height, 0, 0, 1);
+audioEl.playbackRate = constrain(rate, 0.5, 2);
+gainNode.gain.value = constrain(volume, 0, 1);
+
 
   for (let e of entities) {
     push();
