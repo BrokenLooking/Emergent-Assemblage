@@ -89,6 +89,9 @@
     let currentCondition = "clear";
 
     const apiKey = "78fc8980f87888c003d809ef3035c84c";
+    let images = [], entities = [];
+    let audioEl, audioCtx, gainNode;
+
 
     function fetchWeather(lat, lon) {
       fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
@@ -148,10 +151,6 @@ document.getElementById('startOverlay').addEventListener('click', () => {
     });
   });
 });
-
-    let images = [], entities = [];
-    let audioEl, audioCtx, gainNode;
-
 
     function preload() {
       for (let i = 1; i <= 8; i++) {
