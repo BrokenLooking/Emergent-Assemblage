@@ -41,6 +41,7 @@
   <div id="startOverlay">Click to activate the assemblage</div>
   <div id="quote">Initializing...</div>
 
+  <!-- Audio Element -->
   <audio id="background-audio" preload="auto" loop>
     <source src="emergenttrack2.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
@@ -116,13 +117,16 @@
 
     document.getElementById('startOverlay').addEventListener('click', () => {
       const audio = document.getElementById('background-audio');
+      console.log(\"User clicked to start audio\");
       audio.play().then(() => {
         document.getElementById('startOverlay').style.display = 'none';
+        console.log(\"Audio started\");
       }).catch(err => {
-        alert(\"Autoplay blocked or file missing. Check MP3 upload.\");
-        console.error(err);
+        alert(\"⚠️ Could not play audio. Check if the MP3 file is uploaded correctly.\");
+        console.error(\"Audio play error:\", err);
       });
     });
   </script>
 </body>
 </html>
+
