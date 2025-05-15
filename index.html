@@ -152,6 +152,8 @@
     });
 
     let images = [], entities = [];
+    let audioEl;
+
 
     function preload() {
       for (let i = 1; i <= 8; i++) {
@@ -162,6 +164,8 @@
     function setup() {
       createCanvas(windowWidth, windowHeight);
       imageMode(CENTER);
+      let audioEl;
+audioEl = document.getElementById('background-audio');
       for (let i = 0; i < images.length; i++) {
         entities.push({
           img: images[i],
@@ -180,6 +184,10 @@
   background(255); // ✅ solid white
 
   let speed = map(currentTemp, -10, 40, 0.1, 2);
+    if (audioEl) {
+  let rate = map(mouseX, 0, width, 0.5, 2);
+  audioEl.playbackRate = constrain(rate, 0.5, 2);
+}
 
   for (let e of entities) {
     push();
