@@ -145,13 +145,16 @@
     setInterval(updateQuote, 10000);
     updateQuote();
 
-    document.getElementById('startOverlay').addEventListener('click', () => {
-      document.getElementById('background-audio').play().then(() => {
-        document.getElementById('startOverlay').style.display = 'none';
-      });
+  document.getElementById('startOverlay').addEventListener('click', () => {
+  audioCtx.resume().then(() => {
+  audioEl.play().then(() => {
+  document.getElementById('startOverlay').style.display = 'none';
     });
+  });
+});
 
     let images = [], entities = [];
+    let audioCtx, source, gainNode;
     let audioEl;
 
 
@@ -188,9 +191,11 @@ source.connect(gainNode).connect(audioCtx.destination);
   background(255); // ✅ solid white
 
   let speed = max(map(currentTemp, -10, 40, 0.3, 2), 0.3);
-    if (audioEl) {
-  let rate = map(mouseX, 0, width, 0.5, 2);
+if (audioCtx && gainNode) {
+  const rate = map(mouseX, 0, width, 0.5, 2);
+  const volume = map(mouseY, height, 0, 0, 1);
   audioEl.playbackRate = constrain(rate, 0.5, 2);
+  gainNode.gain.value = constrain(volume, 0, 1);
 }
 
   for (let e of entities) {
