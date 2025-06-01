@@ -182,7 +182,7 @@ audioEl = document.getElementById('background-audio');
   function draw() {
   background(255); // ✅ solid white
 
-  let speed = map(currentTemp, -10, 40, 0.1, 2);
+  let speed = max(map(currentTemp, -10, 40, 0.3, 2), 0.3);
     if (audioEl) {
   let rate = map(mouseX, 0, width, 0.5, 2);
   audioEl.playbackRate = constrain(rate, 0.5, 2);
