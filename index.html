@@ -165,6 +165,11 @@
       createCanvas(windowWidth, windowHeight);
       imageMode(CENTER);
 audioEl = document.getElementById('background-audio');
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+source = audioCtx.createMediaElementSource(audioEl);
+gainNode = audioCtx.createGain();
+source.connect(gainNode).connect(audioCtx.destination);
+
       for (let i = 0; i < images.length; i++) {
         entities.push({
           img: images[i],
